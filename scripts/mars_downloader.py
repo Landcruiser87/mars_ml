@@ -29,7 +29,7 @@ HEADERS = {
     'content-type': 'application/x-www-form-urlencoded',
 }
 POST_URL = 'https://pds-imaging.jpl.nasa.gov/api/search/atlas/_search?filter_path=hits.hits._source.archive,hits.hits._source.uri,hits.total,aggregations'
-NAPTIME = 0.75
+NAPTIME = 0.5
 
 ################################# Timing Func ####################################
 def log_time(fn):
@@ -406,7 +406,7 @@ def recurse_tree(parent_uri:str):
                     if Path(item_sp).exists():
                         prog.update(liljob, description=f"[bold green]{item_name} stored locally[/bold green]", advance=1) 
                         logger.debug(f"skipping download on {item_name}")   
-                        time.sleep(0.1)
+                        time.sleep(0.01)
                         continue
                     
                     total_mem += item["_source"]["archive"]["size"]

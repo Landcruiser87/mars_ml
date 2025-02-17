@@ -1,0 +1,22 @@
+[project]
+name = "mars-ml"
+version = "0.1.0"
+description = "Repo for retrieving mass amounts of ATLAS data"
+authors = [
+    {name = "Landcruiser87",email = "andyheroy@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy (>=2.2.3,<3.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "rich (>=13.9.4,<14.0.0)",
+    "pillow (>=11.1.0,<12.0.0)",
+    "opencv-python (>=4.11.0.86,<5.0.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
