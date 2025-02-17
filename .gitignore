@@ -129,9 +129,10 @@ dmypy.json
 .pyre/
 
 #Project specific folders
+/data
 /secret
 /scrap
-/.news_venv
+/.venv
 /.vscode
 .Rhistory
 .DS_Store
