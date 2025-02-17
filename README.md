@@ -1,5 +1,5 @@
 <h1 align="center">
-  <b>News by Rob</b><br>
+  <b>Mars ML</b><br>
 </h1>
 
 <p align="center">
@@ -8,24 +8,7 @@
 </p>
 
 ## Purpose
-A dear friend of my fiancee, Rob, used to circulate and currate his own email
-listings of different and interesting changes in US immigration law. Sadly, he
-recently passed away and as a present to my fiancee I wanted to recreate that
-information exchange so that she could both remember/honor him and stay up to
-date on any changes that may influence her work.  In general, it is difficult to
-track these changes as they're spread across 4 different sites and have
-different categories that all need manual inspection for quality. This software
-has the capability to ingest that information from all 4 sites RSS feeds.  (via
-xml).  It then emails you any new findings after it scans the targeted RSS
-feeds.  
-
-If there are other immigration lawyers who are in need of this information.
-Feel free to clone and use the repo for your own purposes.  You will need to
-create a dummy gmail account for utilizing the email function.  Information as
-to how to do that can be found here.  
-
-[Real Python Article](https://realpython.com/python-send-email/)
-
+This repo is meant to house various scripts to navigate the ATLAS database of images from the Mars 2020 mission.  
 
 ## Requirements
 - Python >= 3.11
@@ -43,65 +26,82 @@ $ python -m venv .news_venv
 (Or replace .news_venv with whatever you want to call your environment)	
 
 On Windows
-$ .news_venv\Scripts\activate.bat
+$ .venv\Scripts\activate.bat
 
-On Mac
-$ source .news_venv/bin/activate
+On Mac / Linux
+$ source .venv/bin/activate
 ```
 
-Before next step, ensure you see the environment name to the left of your
-command prompt.  If you see it and the path file to your current directory, then
-the environment is activated.   If you don't activate it, and start installing
-things.  You'll install all the `requirements.txt` libraries into your `base
-python environment.` Which will lead to dependency problems down the road.  I
-promise. After that has been activated, go to your terminal and type `pip list`
-to check your base python libraries.  Now is a good time to upgrade pip and
-setuptools. As those should be the only two libraries you see on a clean python
-installation.  If not...  well.
+# Project setup with Poetry
 
-![Screenshot 2023-03-28 144052](https://user-images.githubusercontent.com/16505709/228358535-3364e0ea-b273-40b8-ab59-4dddf2f92ee2.png)
+## How to check Poetry installation
 
+In your terminal, navigate to your root folder.
 
-Next install the required libraries with the below pip command!
+If poetry is not installed, do so in order to continue
+This will install version 1.7.0.  Adjust to your preference
 
-```
-$ pip install -r requirements.txt
+```terminal
+curl -sSL https://install.python-poetry.org | python3 - --version 1.7.0
 ```
 
-Order of operations of above terminal commands. 
-- Open Terminal
-- Clone repo
-- Change directories
-- Create venv
-- Activate venv
-- Upgrade pip (because reasons)
-- Install libraries
+To check if poetry is installed on your system. Type the following into your terminal
+
+```terminal
+poetry -V
+```
+
+if you see a `version` returned, you have Poetry installed.  The second command is to update poetry if its installed. (Always a good idea). If not, follow this [link](https://python-poetry.org/docs/) and follow installation commands for your systems requirements. If on windows, we recommend the `powershell` option for easiest installation. Using pip to install poetry will lead to problems down the road and we do not recommend that option.  It needs to be installed separately from your standard python installation to manage your many python installations.  `Note: Python 2.7 is not supported`
+
+## Environment storage
+
+Some prefer Poetry's default storage method of storing environments in one location on your system.  The default storage are nested under the `{cache_dir}/virtualenvs`.  
+
+If you want to store you virtual environment locally.  Set this global configuration flag below once poetry is installed.  This will now search for whatever environments you have in the root folder before trying any global versions of the environment in the cache.
+
+```terminal
+poetry config virtualenvs.in-project true
+```
+
+For general instruction as to poetry's functionality and commands, please see read through poetry's [cli documentation](https://python-poetry.org/docs/cli/)
+To select our poetry env.  If it doesn't have the path to your global python version, you can always make a native one.  Restart vscode and it will select that automatically after you have configured venv's to be stored locally above. 
+
+```terminal
+poetry env use python3.11
+
+or 
+
+python -m venv .venv
+```
+
+To install libraries
+
+```terminal
+poetry install
+```
+
+This will read from the poetry lock file that is included
+in this repo and install all necessary packagage versions.  Should other
+versions be needed, the project TOML file will be utilized and packages updated according to your system requirements.  
+
+To view the current libraries installed
+
+```terminal
+poetry show
+```
+
+To view only top level library requirements
+
+```terminal
+poetry show -T
 
 ## File Setup
 While in root directory run commands below
 ```
 $ mkdir data
-$ mkdir scripts
 $ mkdir secret
 ```
 
-Within the secret folder, make a file called `login.txt`
-Enter the following on the first 3 lines separated by a `colon`
-1. username:str of email
-2. pwd:str of pwd
-3. recipient emails:sep str of emails
-
-## Sites Searched
-
-- Aggregate news data from these sources.  Looks as though some have an RSS feed you can tap right into.  Easier than scraping so going that way.
-- Sites to search are
-  - [UCIS](https://www.uscis.gov/news/rss-feed/59144)
-  - [CBP](https://www.cbp.gov/rss)
-  - [travel](https://travel.state.gov/_res/rss/TAsTWs.xml#.html)
-  - [ICE](https://www.ice.gov/rss)
 
 ## TODO
-
-- [ ] All Done!
-- [ ] Format email header so that when a form update happens, include a notification in the email subject such as "FORMS UPDATE!!"
   
