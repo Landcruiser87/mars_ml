@@ -459,10 +459,10 @@ def main():
     #load logger and funcs
     global logger, console
     console = Console(color_system="truecolor")
-    logger = get_logger(Path().cwd() + Path("./data/logs"), console)
+    logger = get_logger(PurePath(Path().cwd(), Path("./data/logs")), console)
     
     #Load baseparent uri
-    base_parent_uri = "/mars2020_mastcamz_sci_calibrated/data" #This is what changes
+    base_parent_uri = "/mars2020_mastcamz_sci_calibrated/data" #This is whadt changes
     global prog, task, save_path, total_mem
     total_mem = 0
     save_path, total_files = inital_scan(base_parent_uri)
