@@ -405,8 +405,8 @@ def recurse_tree(parent_uri:str):
                     item_sp = PurePath(Path(make_path), Path(item_name))
                     if Path(item_sp).exists():
                         prog.update(liljob, description=f"[bold green]{item_name} stored locally[/bold green]", advance=1) 
-                        logger.debug(f"skipping download on {item_name}")   
-                        time.sleep(0.01)
+                        logger.debug(f"no download, file exists: {item_name}")   
+                        time.sleep(0.0005)
                         continue
                     
                     total_mem += item["_source"]["archive"]["size"]
