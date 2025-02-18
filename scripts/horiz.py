@@ -47,9 +47,9 @@ def horizon_test(img:np.array) -> bool:
                     horizontal_lines.append(line[0])
             # Check if we found any near-horizontal lines
             if horizontal_lines:  
-                return False # Found a horizon
+                return False # Found a horizon (not invalid)
             else:
-                return True # No near-horizontal lines
+                return True # No near-horizontal lines, is invalid
 
         else:
             return True  # No lines detected
@@ -58,7 +58,7 @@ def horizon_test(img:np.array) -> bool:
         logger.debug(f"Error processing image: {e}")
         return True
 def main():
-    for idx, file in enumerate(os.scandir("/home/andyh/github/mars_ml/mars2020_mastcamz_sci_calibrated/data/0003/iof/")):
+    for idx, file in enumerate(os.scandir(PurePath(Path().cwd(), Path("./data/")))):
         if file.path.endswith(".png"):
             img = cv2.imread(file)
             answer = horizon_test(img)
