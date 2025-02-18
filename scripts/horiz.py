@@ -99,6 +99,13 @@ def horizon_dos(img, display_res:bool=False):
         return None
     
 def horizon_tres(image, plot_res:bool=False):
+    def generate_plot(pl_name:str, plot_data:np.array):
+        cv2.namedWindow(pl_name, cv2.WINDOW_KEEPRATIO)
+        cv2.imshow(pl_name, plot_data)
+        cv2.resizeWindow(pl_name, 1200, 800)
+        cv2.waitKey(0)
+        cv2.destroyWindow(pl_name)
+    
     #Pulled from here
     #https://github.com/DevashishPrasad/CascadeTabNet/blob/master/Table%20Structure%20Recognition/Functions/line_detection.py
 
@@ -125,9 +132,9 @@ def horizon_tres(image, plot_res:bool=False):
     horizontal = cv2.erode(horizontal, (1,1), iterations=5)
 
     ## Uncomment to visualize highlighted Horizontal lines
-    # cv2.imshow("horizontal",horizontal)
-    # cv2.waitKey(0)
-
+    if plot_res:
+        generate_plot("horizontal", horizontal)
+        
     # HoughlinesP function to detect horizontal lines
     hor_lines = cv2.HoughLinesP(horizontal,rho=1,theta=np.pi/180,threshold=100,minLineLength=30,maxLineGap=3)
     if hor_lines is None:
@@ -146,8 +153,9 @@ def horizon_tres(image, plot_res:bool=False):
         cv2.line(image, (x1,y1), (x2,y2), (0, 255, 0), 1)
     
     logger.info(f"Shape of image {image.shape}")
-    cv2.imshow("image",image)
-    cv2.waitKey(0)
+    if plot_res:
+        generate_plot("image", image)
+ 
     # ####################################################################
 
     ## Selection of best lines from all the horizontal lines detected ##
@@ -172,7 +180,6 @@ def horizon_tres(image, plot_res:bool=False):
     hor.append([min(lines_x1),lasty1,max(lines_x2),lasty1])
     #####################################################################
 
-
     # [vertical lines]
     # Create structure element for extracting vertical lines through morphology operations
     verticalStructure = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 15))
@@ -185,8 +192,8 @@ def horizon_tres(image, plot_res:bool=False):
     vertical = cv2.erode(vertical, (1,1), iterations=7)
 
     ######## Preprocessing Vertical Lines ###############
-    # cv2.imshow("vertical",vertical)
-    # cv2.waitKey(0)
+    if plot_res:
+        generate_plot("vertical", vertical)
     #####################################################
 
     # HoughlinesP function to detect vertical lines
@@ -203,14 +210,13 @@ def horizon_tres(image, plot_res:bool=False):
     ver_lines = sorted(temp_line,key=lambda x: x[0])
 
     ## Uncomment this part to visualize the lines detected on the image ##
-    # print(len(ver_lines))
-    # for x1, y1, x2, y2 in ver_lines:
-    #     cv2.line(image, (x1,y1-5), (x2,y2-5), (0, 255, 0), 1)
+    logger.info(len(ver_lines))
+    for x1, y1, x2, y2 in ver_lines:
+        cv2.line(image, (x1,y1-5), (x2,y2-5), (0, 255, 0), 1)
 
-    
     # print(image.shape)
-    # cv2.imshow("image",image)
-    # cv2.waitKey(0)
+    if plot_res:
+        generate_plot("image", image)
     ####################################################################
 
     ## Selection of best lines from all the vertical lines detected ##
@@ -243,34 +249,34 @@ def horizon_tres(image, plot_res:bool=False):
 
 
     ############ Visualization of Lines After Post Processing ############
-    # if plot_res:
-    #     for x1, y1, x2, y2 in ver:
-    #         cv2.line(img, (x1,y1), (x2,y2), (0, 255, 0), 1)
+    if plot_res:
+        for x1, y1, x2, y2 in ver:
+            cv2.line(img, (x1,y1), (x2,y2), (0, 255, 0), 1)
 
-    #     for x1, y1, x2, y2 in hor:
-    #         cv2.line(img, (x1,y1), (x2,y2), (0, 255, 0), 1)
-        
-    #     cv2.imshow("image",img)
-    #     cv2.waitKey(0)
-    #######################################################################
+        for x1, y1, x2, y2 in hor:
+            cv2.line(img, (x1,y1), (x2,y2), (0, 255, 0), 1)
+        generate_plot("image", img)
+        cv2.destroyAllWindows()
 
     return hor,ver
 
+    #######################################################################
 def main():
     for idx, file in enumerate(os.scandir(PurePath(Path().cwd(), Path("./data/mars2020_mastcamz_sci_calibrated/data/0003/iof/")))):
-        if file.path.endswith(".png"):
-            img = cv2.imread(file)
-            result = horizon_tres(img, True)
-            if result:
-                logger.info(f"{idx} valid photo {file.name} ")
-            else:
-                logger.info(f"{idx} invalid photo {file.name}")
+        if idx > 0:
+            if file.path.endswith(".png"):
+                img = cv2.imread(file)
+                result = horizon_tres(img, True)
+                if result:
+                    logger.info(f"{idx} valid photo {file.name} ")
+                else:
+                    logger.info(f"{idx} invalid photo {file.name}")
 
-            # answer = horizon_test(img)
-            # if answer:
-            #     logger.info(f"{idx} Invalid photo {file.name}")
-            # else:
-            #     logger.info(f"{idx} Valid photo {file.name}")
+                # answer = horizon_test(img)
+                # if answer:
+                #     logger.info(f"{idx} Invalid photo {file.name}")
+                # else:
+                #     logger.info(f"{idx} Valid photo {file.name}")
 
 
 if __name__ == "__main__":
