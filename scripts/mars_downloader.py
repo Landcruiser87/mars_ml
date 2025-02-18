@@ -193,7 +193,7 @@ def save_json(spath:str, nasa_j:dict):
 
 ################################ API functions ############################################
 #FUNCTION Ping nasa
-def ping_that_nasa(parent_uri:str):
+def ping_that_nasa(parent_uri:str)->json:
     """Function that pings the Atlas API to read the folder structure
 
     Args:
@@ -237,35 +237,95 @@ def ping_that_nasa(parent_uri:str):
     
     #Quick nap so we don't hammer servers
     time.sleep(NAPTIME)
-    resp_json = response.json()
-    return resp_json
+    return response.json()
 
-#FUNCTION valid photo test
-def valid_photo_tests(save_path:Path):
-    #Save file
-    invalid, blank = False, False,
+def blank_test(img) -> bool:
+    ##### Blank Image test ###########
+    #May need to save it first. 
+    # img = Image.open(save_path)
+    img_array = np.array(img)
+    if img_array.ndim == 2:
+        all_zeros = np.all(img_array == 0)
+        if all_zeros:
+            return True
+        else:
+            return False
+    elif img_array.ndim == 3:
+        all_zeros = np.all(img_array[:, :, :3] == 0)
+        if all_zeros:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+#FUNCTION horizon test
+def horizon_test(img:np.array) -> bool:
+    ######## Horizon test ############
+    #Pulled from here
+    # https://github.com/sallamander/horizon-detection/blob/master/utils.py
+
+
+    """Detect the horizon's starting and ending points in the given image
+
+    The horizon line is detected by applying Otsu's threshold method to
+    separate the sky from the remainder of the image.
+
+    :param image_grayscaled: grayscaled image to detect the horizon on, of
+     shape (height, width)
+    :type image_grayscale: np.ndarray of dtype uint8
+    :return: the (x1, x2, y1, y2) coordinates for the starting and ending
+     points of the detected horizon line
+    :rtype: tuple(int)
+    """
     try:
-        ##### Blank Image test ###########
-        #May need to save it first. 
-        # img = Image.open(save_path)
-        img = cv2.imread(save_path)
-        img_array = np.array(img)
-        if img_array.ndim == 2:
-            all_zeros = np.all(img_array == 0)
-            if all_zeros:
-                blank = True
-        elif img_array.ndim == 3:
-            all_zeros = np.all(img_array[:, :, :3] == 0)
-            if all_zeros:
-                blank = True
-        ######## Horizon test ############
+        image_grayed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        msg = ('`image_grayscaled` should be a grayscale, 2-dimensional image '
+            'of shape (height, width).')
+        assert image_grayed.ndim == 2, msg
+        image_blurred = cv2.GaussianBlur(image_grayed, ksize=(3, 3), sigmaX=0)
+
+        _, image_thresholded = cv2.threshold(
+            image_blurred, 
+            thresh=0, 
+            maxval=1,
+            type=cv2.THRESH_BINARY+cv2.THRESH_OTSU
+        )
+
+        image_thresholded = image_thresholded - 1
+        image_closed = cv2.morphologyEx(
+            image_thresholded, 
+            cv2.MORPH_CLOSE,
+            kernel=np.ones((9, 9), np.uint8)
+        )
+
+        horizon_x1 = 0
+        horizon_x2 = image_grayed.shape[1] - 1
+        # Check if horizon exists at both sides of the image.
+        try:
+            horizon_y1 = max(np.where(image_closed[:, horizon_x1] == 0)[0])
+            horizon_y2 = max(np.where(image_closed[:, horizon_x2] == 0)[0])
+            # If we get to here, we have a horizon
+            return False
         
+        except ValueError: # No horizon found on at least one side.
+            return True    
 
+    except Exception as e:
+        logger.debug(f"Error processing image: {e}")
+        return True
+    
+#FUNCTION valid photo tests
+def valid_photo_tests(save_path:Path):#
+    invalid, blank = False, False,
+    img = cv2.imread(save_path)
 
-
-        if not invalid or not blank:
-            #Delete file
-            Path.unlink(save_path)
+    try:
+        blank = blank_test(img)
+        invalid = horizon_test(img)
+        if blank | invalid:
+            #If either True, delete file                
+            Path.unlink(save_path)    
 
         #Open it and check if its blank. 
         return invalid, blank
@@ -435,13 +495,13 @@ def recurse_tree(parent_uri:str):
                     try:
                         item_uri = item_uri.replace("data", "browse").replace(".IMG", ".png")
                         invalid, blank = download_image(uri, item_sp, item_uri)
-                        if invalid:
-                            logger.warning(f"{item_name} is not a horizon photo")
+                        if blank:
+                            logger.warning(f"file blank: {item_name} ")
                             logger.debug(f"Deleted {item_name}")
                             item["_source"]["archive"]["valid"] = False
-
-                        elif blank:
-                            logger.warning(f"{item_name} is blank")
+                            
+                        elif invalid:
+                            logger.warning(f"no horizon: {item_name}")
                             logger.debug(f"Deleted {item_name}")
                             item["_source"]["archive"]["valid"] = False
                             
@@ -454,9 +514,8 @@ def recurse_tree(parent_uri:str):
                     
                     #Try saving the meta data
                     try:
-                        if (not invalid) & (not blank):
-                            save_json(PurePath(Path(make_path), Path(item_name.replace(".png", ".json"))), item["_source"]["archive"])
-                            logger.debug(f"json saved {item_name}")
+                        save_json(PurePath(Path(make_path), Path(item_name.replace(".png", ".json"))), item["_source"]["archive"])
+                        logger.debug(f"json saved {item_name}")
 
                     except Exception as e:
                         logger.warning(f"Error saving {item_uri}: {e}")
