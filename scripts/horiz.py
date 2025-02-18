@@ -106,9 +106,9 @@ def horizon_tres(image, plot_res:bool=False):
     bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 1)
     bw = cv2.bitwise_not(bw)
     ## To visualize image after thresholding ##
-    if plot_res:
-        cv2.imshow("bw",bw)
-        cv2.waitKey(0)
+    # if plot_res:
+    #     cv2.imshow("bw",bw)
+    #     cv2.waitKey(0)
     ###########################################
     horizontal = bw.copy()
     vertical = bw.copy()
@@ -144,7 +144,6 @@ def horizon_tres(image, plot_res:bool=False):
     logger.info(f"number of lines {(len(hor_lines))}")
     for x1, y1, x2, y2 in hor_lines:
         cv2.line(image, (x1,y1), (x2,y2), (0, 255, 0), 1)
-
     
     logger.info(f"Shape of image {image.shape}")
     cv2.imshow("image",image)
@@ -263,9 +262,9 @@ def main():
             img = cv2.imread(file)
             result = horizon_tres(img, True)
             if result:
-                logger.info(f"valid photo {file.name} ")
+                logger.info(f"{idx} valid photo {file.name} ")
             else:
-                logger.info(f"Invalid photo {file.name}")
+                logger.info(f"{idx} invalid photo {file.name}")
 
             # answer = horizon_test(img)
             # if answer:
