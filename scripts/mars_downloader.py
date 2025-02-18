@@ -305,13 +305,13 @@ def horizon_test(img:np.array) -> bool:
         try:
             horizon_y1 = max(np.where(image_closed[:, horizon_x1] == 0)[0])
             horizon_y2 = max(np.where(image_closed[:, horizon_x2] == 0)[0])
-            # If we get to here, we have a horizon
+            # If we get to here, we have a horizon, not invalid (False)
             return False
         
-        except ValueError: # No horizon found on at least one side.
+        except ValueError: # No horizon found on at least one side. Is invalid
             return True    
 
-    except Exception as e:
+    except Exception as e: #Invalid due to errors
         logger.debug(f"Error processing image: {e}")
         return True
     
