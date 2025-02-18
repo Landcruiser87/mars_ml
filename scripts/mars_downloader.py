@@ -127,15 +127,16 @@ def mainspinner(console:Console, totalstops:int):
         jobtask (int): Job id for the main job
     """    
     my_progress_bar = Progress(
-        TextColumn("{task.description}"),
         SpinnerColumn("pong"),
+        TextColumn("{task.description}"),
         BarColumn(),
-        TextColumn("*"),
         "time elapsed:",
         TextColumn("*"),
         TimeElapsedColumn(),
         TextColumn("*"),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        TextColumn("*"),
+        
         transient=True,
         console=console,
         refresh_per_second=10
@@ -192,6 +193,46 @@ def save_json(spath:str, nasa_j:dict):
 
 
 ################################ API functions ############################################
+
+
+#FUNCTION Intial Scan
+def inital_scan(base_parent_uri:str):
+    """This just does an initial scan to get a folder count in /data
+
+    Args:
+        base_parent_uri (str): starting URI point
+
+    Raises:
+        IndexError: _description_
+        ValueError: _description_
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """    
+    try:
+        nasa_json = ping_that_nasa(base_parent_uri)
+
+    except IndexError:
+        logger.warning("Gah something happened, run away!")
+        raise IndexError("An Index of errors, I blame myself")
+
+    else:
+        total = nasa_json["hits"]["total"]["value"]
+        question = f"\n\nDo you want to scan {total} folders and files?\nIf so enter a file path ie:\n./data/nasa\nOtherwise type no to exit\n"
+        fold_choice = console.input(f"{question}")
+        if fold_choice == "no":
+            logger.warning("Run Away!!!!!")
+            raise ValueError("Input Error!")
+        else:
+            save_fp = PurePath(Path.cwd(), Path(fold_choice)) #Path("./secret")
+            if Path(save_fp).exists():
+                logger.info("Let the downloads begin!")
+                return save_fp, total
+            else:
+                logger.warning("File Location doesn't exist")
+                raise ValueError("Select a location that exists")
+
 #FUNCTION Ping nasa
 def ping_that_nasa(parent_uri:str)->json:
     """Function that pings the Atlas API to read the folder structure
@@ -305,7 +346,7 @@ def horizon_test(img:np.array) -> bool:
         try:
             horizon_y1 = max(np.where(image_closed[:, horizon_x1] == 0)[0])
             horizon_y2 = max(np.where(image_closed[:, horizon_x2] == 0)[0])
-            # If we get to here, we have a horizon, not invalid (False)
+            # If we get to here, we have a horizon, so its not invalid (False)
             return False
         
         except ValueError: # No horizon found on at least one side. Is invalid
@@ -322,7 +363,7 @@ def valid_photo_tests(save_path:Path):#
 
     try:
         blank = blank_test(img)
-        invalid = horizon_test(img)
+        # invalid = horizon_test(img)
         if blank | invalid:
             #If either True, delete file                
             Path.unlink(save_path)    
@@ -398,45 +439,6 @@ def download_image(image_uri:str, save_path:Path, item_uri:str):
         f.write(response.content)
     
     return valid_photo_tests(save_path)
-
-
-#FUNCTION Intial Scan
-def inital_scan(base_parent_uri:str):
-    """This just does an initial scan to get a folder count in /data
-
-    Args:
-        base_parent_uri (str): starting URI point
-
-    Raises:
-        IndexError: _description_
-        ValueError: _description_
-        ValueError: _description_
-
-    Returns:
-        _type_: _description_
-    """    
-    try:
-        nasa_json = ping_that_nasa(base_parent_uri)
-
-    except IndexError:
-        logger.warning("Gah something happened, run away!")
-        raise IndexError("An Index of errors, I blame myself")
-
-    else:
-        total = nasa_json["hits"]["total"]["value"]
-        question = f"\n\nDo you want to scan {total} folders and files?\nIf so enter a file path ie:\n./data/nasa\nOtherwise type no to exit\n"
-        fold_choice = console.input(f"{question}")
-        if fold_choice == "no":
-            logger.warning("Run Away!!!!!")
-            raise ValueError("Input Error!")
-        else:
-            save_fp = PurePath(Path.cwd(), Path(fold_choice)) #Path("./secret")
-            if Path(save_fp).exists():
-                logger.info("Let the downloads begin!")
-                return save_fp, total
-            else:
-                logger.warning("File Location doesn't exist")
-                raise ValueError("Select a location that exists")
 
 #FUNCTION Recurse Tree
 def recurse_tree(parent_uri:str):
