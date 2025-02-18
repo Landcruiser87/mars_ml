@@ -57,16 +57,79 @@ def horizon_test(img:np.array) -> bool:
     except Exception as e: #Invalid due to errors
         logger.debug(f"Error processing image: {e}")
         return True
+
+def horizon_dos(img, display_res:bool=False):
+    try:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Enhance contrast (important for Mars images)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))  # Adjust parameters as needed
+        enhanced_gray = clahe.apply(gray)
+
+        # Improved edge detection (adjust parameters based on image characteristics)
+        edges = cv2.Canny(enhanced_gray, 50, 150, apertureSize=3)
+
+        # Hough Line Transform (tune parameters)
+        lines = cv2.HoughLines(edges, 1, np.pi / 180, 150) # Reduced threshold
+
+        horizontal_lines = []
+        if lines is not None:
+            for line in lines:
+                rho, theta = line[0]
+                # More robust horizontal line detection using cosine and tolerance
+                if np.cos(theta) > 0.95: # cosine close to 1 means horizontal
+                    horizontal_lines.append((rho, theta))
+
+        if display_res:
+            # Draw detected lines (more efficient drawing)
+            for rho, theta in horizontal_lines:
+                a = np.cos(theta)
+                b = np.sin(theta)
+                x0 = a * rho
+                y0 = b * rho
+                x1 = int(x0 + 1000 * (-b))
+                y1 = int(y0 + 1000 * (a))
+                x2 = int(x0 - 1000 * (-b))
+                y2 = int(y0 - 1000 * (a))
+                cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)  # Red lines
+
+            cv2.namedWindow("floorlava")
+            cv2.setWindowProperty("floorlava", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+            cv2.imshow('Horizontal Lines', img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+        return horizontal_lines
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
+
 def main():
-    for idx, file in enumerate(os.scandir(PurePath(Path().cwd(), Path("./data/")))):
+    for idx, file in enumerate(os.scandir(PurePath(Path().cwd(), Path("./data/mars2020_mastcamz_sci_calibrated/data/0003/iof/")))):
         if file.path.endswith(".png"):
             img = cv2.imread(file)
-            answer = horizon_test(img)
-            if answer:
-                logger.info(f"{idx} Invalid photo {file.name}")
+            lines_dos = horizon_dos(img, True)
+            if lines_dos is not None:
+                logger.info(f"{idx} valid photo {file.name}")
             else:
-                logger.info(f"{idx} Valid photo {file.name}")
+                logger.info(f"{idx} invalid photo {file.name}")
+
+            # answer = horizon_test(img)
+            # if answer:
+            #     logger.info(f"{idx} Invalid photo {file.name}")
+            # else:
+            #     logger.info(f"{idx} Valid photo {file.name}")
 
 
 if __name__ == "__main__":
     main()
+
+    
+# How to detect horizontal lines in an image using OpenCV and the Hough Transform: 
+
+
+
+# https://stackoverflow.com/questions/62305018/challenge-how-to-get-the-4-sided-polygon-with-minimum-area
+# https://stackoverflow.com/questions/48954246/find-sudoku-grid-using-opencv-and-python
