@@ -1,5 +1,6 @@
 #Import libraries
 import numpy as np
+import cv2
 import os
 import logging
 import time
@@ -239,8 +240,46 @@ def ping_that_nasa(parent_uri:str):
     resp_json = response.json()
     return resp_json
 
-#FUNCTION Download Image
-def download_image(image_uri:str, save_path:Path, item_uri:str, release_id:int=0, resize:str="lg"):
+#FUNCTION valid photo test
+def valid_photo_tests(save_path:Path):
+    #Save file
+    invalid, blank = False, False,
+    try:
+        ##### Blank Image test ###########
+        #May need to save it first. 
+        # img = Image.open(save_path)
+        img = cv2.imread(save_path)
+        img_array = np.array(img)
+        if img_array.ndim == 2:
+            all_zeros = np.all(img_array == 0)
+            if all_zeros:
+                blank = True
+        elif img_array.ndim == 3:
+            all_zeros = np.all(img_array[:, :, :3] == 0)
+            if all_zeros:
+                blank = True
+        ######## Horizon test ############
+        
+
+
+
+        if not invalid or not blank:
+            #Delete file
+            Path.unlink(save_path)
+
+        #Open it and check if its blank. 
+        return invalid, blank
+        
+    except FileNotFoundError:
+        logger.warning(f"Error: File not found at {save_path}")
+        return None
+    except Exception as e: 
+        logger.warning(f"An error occurred: {e}")
+        return None
+
+
+#FUNCTION download Image
+def download_image(image_uri:str, save_path:Path, item_uri:str):
     """This function will download the individual image to the directory
 
     Args:
@@ -250,9 +289,17 @@ def download_image(image_uri:str, save_path:Path, item_uri:str, release_id:int=0
         release_id (int): Release version of the file (not working)
         resize (str)    : Whether to resize the file (not working)
     """
+    #Scratch Code
     # url = f"https://pds-imaging.jpl.nasa.gov/api/data/{image_uri}"
-    # url = f"https://pds-imaging.jpl.nasa.gov/api/data/{image_uri}::{release_id}?"
     # url = f"https://pds-imaging.jpl.nasa.gov/api/data/{image_uri}::{release_id}:{resize}?"
+    # /mars2020_mastcamz_sci_calibrated/data/0001/iof/ZL0_0001_0667035659_000IOF_N0010052AUT_04096_0260LMA03.IMG-
+        #need to replace img with png and data with browse.
+    # /mars2020_mastcamz_sci_calibrated/browse/0001/iof/ZL0_0001_0667035659_000IOF_N0010052AUT_04096_0260LMA03.png
+        #  f"https://pds-imaging.jpl.nasa.gov/api/data/{image_uri}"
+
+    #'referer': 'https://pds-imaging.jpl.nasa.gov/beta/archive-explorer?mission=mars_2020&instrument=mastcamz&bundle=mars2020_mastcamz_sci_calibrated&uri=atlas:pds4:mars_2020:perseverance:/mars2020_mastcamz_sci_calibrated/data/0001/iof/ZL0_0001_0667035659_000IOF_N0010052AUT_04096_0260LMA03.IMG-',
+    # url = 'https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/' 
+
 
     custom_headers = {
         'accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
@@ -269,22 +316,12 @@ def download_image(image_uri:str, save_path:Path, item_uri:str, release_id:int=0
         'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
     }
 
-    # /mars2020_mastcamz_sci_calibrated/data/0001/iof/ZL0_0001_0667035659_000IOF_N0010052AUT_04096_0260LMA03.IMG-
-        #need to replace img with png and data with browse.
-    # /mars2020_mastcamz_sci_calibrated/browse/0001/iof/ZL0_0001_0667035659_000IOF_N0010052AUT_04096_0260LMA03.png
-        #  f"https://pds-imaging.jpl.nasa.gov/api/data/{image_uri}"
-
-    #'referer': 'https://pds-imaging.jpl.nasa.gov/beta/archive-explorer?mission=mars_2020&instrument=mastcamz&bundle=mars2020_mastcamz_sci_calibrated&uri=atlas:pds4:mars_2020:perseverance:/mars2020_mastcamz_sci_calibrated/data/0001/iof/ZL0_0001_0667035659_000IOF_N0010052AUT_04096_0260LMA03.IMG-',
-    # url = 'https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/' 
-    
-
     archive_root = 'https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative' 
     url = archive_root + item_uri
     logger.debug(f"requesting {url}")
     response = requests.get(url=url, headers=custom_headers, stream=True)
 
     # response = requests.get(url=url, stream=True)
-
 
     #Just in case we piss someone off
     if response.status_code != 200:
@@ -296,30 +333,12 @@ def download_image(image_uri:str, save_path:Path, item_uri:str, release_id:int=0
     
     #Quick nap so we don't hammer NASA servers
     time.sleep(NAPTIME)
-    
-    #Save file
+
     with open(save_path, "wb") as f:
         f.write(response.content)
     
-    #Open it and check if its blank. 
-    try:
-        img = Image.open(save_path)
-        img_array = np.array(img)
-        if img_array.ndim == 2: 
-            all_zeros = np.all(img_array == 0)
-        elif img_array.ndim == 3:  
-            all_zeros = np.all(img_array[:, :, :3] == 0)
-        else:
-            return None
+    return valid_photo_tests(save_path)
 
-        return all_zeros
-        
-    except FileNotFoundError:
-        logger.warning(f"Error: File not found at {save_path}")
-        return None
-    except Exception as e: 
-        logger.warning(f"An error occurred: {e}")
-        return None
 
 #FUNCTION Intial Scan
 def inital_scan(base_parent_uri:str):
@@ -415,10 +434,17 @@ def recurse_tree(parent_uri:str):
                     #Try downloading the image
                     try:
                         item_uri = item_uri.replace("data", "browse").replace(".IMG", ".png")
-                        invalid = download_image(uri, item_sp, item_uri)
+                        invalid, blank = download_image(uri, item_sp, item_uri)
                         if invalid:
-                            logger.warning(f"{item_name} is blank")
+                            logger.warning(f"{item_name} is not a horizon photo")
+                            logger.debug(f"Deleted {item_name}")
                             item["_source"]["archive"]["valid"] = False
+
+                        elif blank:
+                            logger.warning(f"{item_name} is blank")
+                            logger.debug(f"Deleted {item_name}")
+                            item["_source"]["archive"]["valid"] = False
+                            
                         else:
                             logger.debug(f"downloaded file {item_name} from {parent_uri}")
                             item["_source"]["archive"]["valid"] = True
@@ -428,8 +454,9 @@ def recurse_tree(parent_uri:str):
                     
                     #Try saving the meta data
                     try:
-                        save_json(PurePath(Path(make_path), Path(item_name.replace(".png", ".json"))), item["_source"]["archive"])
-                        logger.debug(f"json saved {item_name}")
+                        if (not invalid) & (not blank):
+                            save_json(PurePath(Path(make_path), Path(item_name.replace(".png", ".json"))), item["_source"]["archive"])
+                            logger.debug(f"json saved {item_name}")
 
                     except Exception as e:
                         logger.warning(f"Error saving {item_uri}: {e}")

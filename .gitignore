@@ -137,3 +137,5 @@ dmypy.json
 .Rhistory
 .DS_Store
 *.log
+*.png
+*.json
