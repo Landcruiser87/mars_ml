@@ -455,17 +455,17 @@ def recurse_tree(parent_uri:str):
         logger.info(f"ping {parent_uri}")
         data = ping_that_nasa(parent_uri)
         directory, files = {}, []
-        pileofsomething = data["hits"]["hits"]
+        pile_o_data = data["hits"]["hits"]
         prog.update(task_id=task, description=f"[green]searching [red]{parent_uri}[/red]", advance=1)
         make_path = PurePath(Path(save_path), Path(f"./{parent_uri}") )
         os.makedirs(make_path, exist_ok=True)
         logger.debug(f"new dir -> {make_path}")
         
-        typecheck = all([item["_source"]["archive"]["fs_type"]=="file" for item in pileofsomething])
-        if typecheck:
-            liljob = add_spin_subt(prog, f"downloading images", len(pileofsomething) // 2) #Div by 2 because we don't want the xml files
+        type_check = all([item["_source"]["archive"]["fs_type"]=="file" for item in pile_o_data])
+        if type_check:
+            liljob = add_spin_subt(prog, f"downloading images", len(pile_o_data) // 2) #Div by 2 because we don't want the xml files
 
-        for item in pileofsomething:
+        for item in pile_o_data:
             uri = item["_source"]["uri"]
             item_uri = uri.split(":")[-1]
             item_type = item["_source"]["archive"]["fs_type"]
@@ -526,7 +526,7 @@ def recurse_tree(parent_uri:str):
                 logger.warning(f"unknown item type: {item_type}")
 
         directory[parent_uri] = files
-        if typecheck:
+        if type_check:
             prog.update(liljob, visible=False)
 
         return directory
