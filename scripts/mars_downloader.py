@@ -491,7 +491,7 @@ def recurse_tree(parent_uri:str):
                         continue
                     
                     total_mem += item["_source"]["archive"]["size"]
-                    prog.update(liljob, description=f"[yellow]{sizeofobject(total_mem)}[/yellow] [green]downloaded[/green] [red]{item_name}[/red]", advance=1)
+                    prog.update(liljob, description=f"[green]downloaded[/green] [yellow]{sizeofobject(total_mem)}[/yellow] [red]{item_name}[/red]", advance=1)
                     files.append(item_name)
                     #Try downloading the image
                     try:

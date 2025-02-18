@@ -45,11 +45,11 @@ def horizon_test(img:np.array) -> bool:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # 1. Edge Detection (Canny or Sobel)
-        edges = cv2.Canny(gray, 50, 150, apertureSize=3)  # Adjust thresholds as needed
+        # edges = cv2.Canny(gray, 50, 150, apertureSize=3)  # Adjust thresholds as needed
         # OR, if Canny is too sensitive:
-        # sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=5)  # Adjust ksize
-        # sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=5)
-        # edges = np.sqrt(sobelx**2 + sobely**2).astype(np.uint8)
+        sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=5)  # Adjust ksize
+        sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=5)
+        edges = np.sqrt(sobelx**2 + sobely**2).astype(np.uint8)
 
         # 2. Hough Line Transform (Probabilistic)
         lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=200, maxLineGap=50) # Tweak parameters
@@ -71,7 +71,7 @@ def horizon_test(img:np.array) -> bool:
             return True  # No lines detected
 
     except Exception as e: #Invalid due to errors
-        # logger.debug(f"Error processing image: {e}")
+        logger.debug(f"Error processing image: {e}")
         return True
 def main():
     for idx, file in enumerate(os.scandir("/home/andyh/github/mars_ml/mars2020_mastcamz_sci_calibrated/data/0003/iof/")):
