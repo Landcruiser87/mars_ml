@@ -19,28 +19,12 @@ from rich.progress import (
 from rich.logging import RichHandler
 from rich.console import Console
 from PIL import Image
-from support import logger, console
+from support import logger
 
 
 #FUNCTION horizon test
 def horizon_test(img:np.array) -> bool:
     ######## Horizon test ############
-    #Pulled from here
-    # https://github.com/sallamander/horizon-detection/blob/master/utils.py
-
-
-    """Detect the horizon's starting and ending points in the given image
-
-    The horizon line is detected by applying Otsu's threshold method to
-    separate the sky from the remainder of the image.
-
-    :param image_grayscaled: grayscaled image to detect the horizon on, of
-     shape (height, width)
-    :type image_grayscale: np.ndarray of dtype uint8
-    :return: the (x1, x2, y1, y2) coordinates for the starting and ending
-     points of the detected horizon line
-    :rtype: tuple(int)
-    """
     try:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
