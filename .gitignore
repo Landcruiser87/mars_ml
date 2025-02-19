@@ -136,6 +136,7 @@ dmypy.json
 /.vscode
 .Rhistory
 .DS_Store
+*.pub
 *.log
 *.png
 *.json

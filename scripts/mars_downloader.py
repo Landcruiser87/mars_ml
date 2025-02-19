@@ -111,7 +111,6 @@ def get_logger(log_dir:Path, console:Console)->logging.Logger:
     logger.propagate = False
     return logger
 
-
 ################################# Rich Spinner Control ####################################
 
 #FUNCTION sleep progbar
