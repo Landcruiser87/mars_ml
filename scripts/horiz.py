@@ -8,16 +8,6 @@ import requests
 import json
 import datetime
 from pathlib import Path, PurePath
-from rich.progress import (
-    Progress,
-    BarColumn,
-    SpinnerColumn,
-    TextColumn,
-    TimeRemainingColumn,
-    TimeElapsedColumn
-)
-from rich.logging import RichHandler
-from rich.console import Console
 from PIL import Image
 from support import logger
 
@@ -169,7 +159,7 @@ def horizon_tres(image, plot_res:bool=False):
             lines_x1.append(x1)
             lines_x2.append(x2)
         else:
-            if (i != 0 and len(lines_x1) is not 0):
+            if (i != 0) and (len(lines_x1) != 0):
                 hor.append([min(lines_x1),lasty1,max(lines_x2),lasty1])
             lasty1 = y1
             lines_x1 = []
@@ -234,7 +224,7 @@ def horizon_tres(image, plot_res:bool=False):
             # lasty1 = y1
             # lasty2 = y2
         else:
-            if (count != 0 and len(lines_y1) is not 0):
+            if (count != 0) and (len(lines_y1) != 0):
                 ver.append([lastx1,min(lines_y2)-5,lastx1,max(lines_y1)-5])
             lastx1 = x1
             lines_y1 = []
@@ -257,16 +247,95 @@ def horizon_tres(image, plot_res:bool=False):
             cv2.line(img, (x1,y1), (x2,y2), (0, 255, 0), 1)
         generate_plot("image", img)
         cv2.destroyAllWindows()
-
     return hor,ver
+
+def classify_res(hor:np.array, ver:np.array):
+    
+    pass
+
+def training_images() -> list:
+    valid = [
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217291_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217146_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217180_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217204_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217228_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217249_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217270_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217291_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217312_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217333_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217353_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217373_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217393_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217414_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217462_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217486_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217510_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217530_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217550_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217574_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217600_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217624_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217648_000IOF_N0010052AUT_04096_034085A03.png",
+        "",
+        "",
+        "",
+        "",
+
+    ]
+    invalid = [
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667216999_445IOF_N0010052ZCAM00013_0630LUA02.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217696_000IOF_N0010052AUT_04096_034085A03.png",
+        "data\mars2020_mastcamz_sci_calibrated\data\0003\iof\ZL0_0003_0667217717_000IOF_N0010052AUT_04096_034085A03.png",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+    ]
+
 
     #######################################################################
 def main():
-    for idx, file in enumerate(os.scandir(PurePath(Path().cwd(), Path("./data/mars2020_mastcamz_sci_calibrated/data/0003/iof/")))):
+    for idx, file in enumerate(os.scandir(PurePath(Path().cwd(), Path("./data/mars2020_mastcamz_sci_calibrated/data/0003/iof/horizon/")))):
         if idx > 0:
             if file.path.endswith(".png"):
                 img = cv2.imread(file)
-                result = horizon_tres(img, True)
+                hor, ver = horizon_tres(img, True)
+                result = ""# classify_res(hor, ver)
+                
                 if result:
                     logger.info(f"{idx} valid photo {file.name} ")
                 else:
