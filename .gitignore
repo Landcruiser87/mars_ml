@@ -140,3 +140,4 @@ dmypy.json
 *.log
 *.png
 *.json
+*temp_user_key

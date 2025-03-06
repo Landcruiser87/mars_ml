@@ -20,7 +20,6 @@ from rich.logging import RichHandler
 from rich.console import Console
 from PIL import Image
 
-
 ################################# Globals ####################################
 HEADERS = {
     'Upgrade-Insecure-Requests': '1',
@@ -297,6 +296,7 @@ def blank_test(img) -> bool:
         else:
             return False
     else:
+        logger.info("Dimensional error")
         return False
 
 #FUNCTION horizon test
@@ -441,7 +441,7 @@ def download_image(image_uri:str, save_path:Path, item_uri:str):
 
 #FUNCTION Recurse Tree
 def recurse_tree(parent_uri:str):
-    """Recursive internal function that descends the folder structure by file type
+    """Recursive function that descends the folder structure by file type
 
     Args:
         parent_uri (str): URI that you started with
